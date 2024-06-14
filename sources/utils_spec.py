@@ -91,7 +91,7 @@ def ETLHelper(userID, sessionPath):
     gyr_norm = np.expand_dims(gyr_norm, axis=1)
     mag_norm = np.expand_dims(mag_norm, axis=1)
     
-    touchActivity = np.genfromtxt('TouchEvent.csv', delimiter=',')[:10000,[6,7,8,9]]
+    touchActivity = np.genfromtxt('ScrollEvent.csv', delimiter=',')[:10000,[6,7,8,9]]
     
     if len(touchActivity) < 10000:
         touchActivity = overSampling(touchData=touchActivity, maxLength=10000) 
@@ -104,7 +104,7 @@ def ETLHelper(userID, sessionPath):
     
     #np.hstack(logs)
 
-    return  acc, touchActivity
+    return  mag, touchActivity
 
 
 """
@@ -138,7 +138,17 @@ def ETL(user, session):
     yield touchSet, userLabel, Logs
 
 
-def dataGenerator(numUsers, session):
+def dataGenerator(numUsers, evaluation=None, pretraining=True):
+
+    if pretraining == True:
+        starting_session = 0
+        ending_session = 9
+    if evaluation == True:
+        starting_session = 12
+        ending_session = 24
+    else:
+        starting_session = 0
+        ending_session = 13
     x_ds = []
     touch_ds = []
 
@@ -146,11 +156,11 @@ def dataGenerator(numUsers, session):
 
     Logs = []
     y = []
-
     u=0
+
     while u <= numUsers:
         print("userID {}".format(u))
-        for touch_data, label, logs in ETL(user=u, session=range(session)): 
+        for touch_data, label, logs in ETL(user=u, session=range(starting_session, ending_session)): 
             touch_ds.append(touch_data)
             y_ds.append(label)
             Logs.append(logs)
