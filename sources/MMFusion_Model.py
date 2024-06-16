@@ -10,15 +10,13 @@ Input to RNN need to have shape: (batch, seq_length, input_features)
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 class ConvRNN(nn.Module):
 
-    def __init__(self, input_size, hidden_size, seq_length, num_layers, batch_size, num_classes):
+    def __init__(self, input_size, hidden_size, seq_length, num_layers):
         super().__init__()
 
         self.input_size = input_size
         self.hidden_size = hidden_size
         self.seq_length = seq_length
         self.num_layers = num_layers
-        self.batch_size = batch_size
-        self.num_classes = num_classes
 
         # input shape for RNN: (128, 3, 64) 
 
@@ -44,10 +42,11 @@ class ConvRNN(nn.Module):
         
         self.RNN = nn.RNN(input_size=128, hidden_size=256, num_layers=2, nonlinearity='tanh', batch_first=True, dropout=0.5)
 
-        self.fc = nn.Linear(self.hidden_size, self.num_classes)
+        # self.fc = nn.Linear(self.hidden_size, self.num_classes)
 
     def forward(self, x):
-        x = x.reshape(self.batch_size, self.input_size, self.seq_length)
+        batch_size = x.size(0)
+        x = x.reshape(batch_size, self.input_size, self.seq_length)
         x = self.conv1(x)
         x = self.maxpool(x)
 
@@ -55,28 +54,26 @@ class ConvRNN(nn.Module):
         x = self.conv3(x)
         x = self.dropout(x)
 
-        x = x.reshape(self.batch_size, 16, 128) 
+        x = x.reshape(batch_size, 16, 128) 
         # 128: Final output from the Conv3 layer
 
         h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(device)
 
         out, hn = self.RNN(x, h0)
         out_logit = out[:, -1, :]
-        out_features = self.fc(out_logit)
+        # out_features = self.fc(out_logit)
         return out_logit
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 class TouchGestureModel(nn.Module):
 
-    def __init__(self, input_size, hidden_size, seq_length, num_layers, batch_size, num_classes):
+    def __init__(self, input_size, hidden_size, seq_length, num_layers):
         super().__init__()
 
         self.input_size = input_size
         self.hidden_size = hidden_size
         self.seq_length = seq_length
         self.num_layers = num_layers
-        self.batch_size = batch_size
-        self.num_classes = num_classes
 
         # input shape for RNN: (128, 3, 64) 
 
@@ -102,10 +99,11 @@ class TouchGestureModel(nn.Module):
         
         self.RNN = nn.RNN(input_size=128, hidden_size=256, num_layers=2, nonlinearity='tanh', batch_first=True, dropout=0.5)
 
-        self.fc = nn.Linear(self.hidden_size, self.num_classes)
+        # self.fc = nn.Linear(self.hidden_size, self.num_classes)
 
     def forward(self, x):
-        x = x.reshape(self.batch_size, self.input_size, self.seq_length)
+        batch_size = x.size(0)
+        x = x.reshape(batch_size, self.input_size, self.seq_length)
         x = self.conv1(x)
         x = self.maxpool(x)
 
@@ -113,23 +111,22 @@ class TouchGestureModel(nn.Module):
         x = self.conv3(x)
         x = self.dropout(x)
 
-        x = x.reshape(self.batch_size, 77, 128) 
+        x = x.reshape(batch_size, 77, 128) 
         # 128: Final output from the Conv3 layer
 
         h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(device)
 
         out, hn = self.RNN(x, h0)
         out_logit = out[:, -1, :]
-        out_features = self.fc(out_logit)
+        # out_features = self.fc(out_logit)
         return out_logit
     
 
 class SpectrogramModel(nn.Module):
 
-    def __init__(self, num_classes):
+    def __init__(self, input_shape):
 
         super().__init__()
-        self.num_classes = num_classes
 
         self.layer1 = nn.Sequential(
             nn.Conv2d(in_channels=3, out_channels=64, kernel_size=3, stride=2),
@@ -153,7 +150,19 @@ class SpectrogramModel(nn.Module):
         
         #self.maxpool2d = nn.MaxPool2d(kernel_size=1, stride=2)
         
-        self.fc = nn.Linear(4608, 256)
+        conv_output_size = self._get_conv_output(input_shape)
+        self.fc = nn.Linear(conv_output_size, 256)
+
+    def _get_conv_output(self, shape):
+        bs = 1
+        input = torch.rand(bs, *shape)
+        output_feat = self.layer1(input)
+        output_feat = self.layer2(output_feat)
+        output_feat = self.layer3(output_feat)
+        output_feat = self.layer4(output_feat)
+        n_size = output_feat.reshape(bs, -1).size(1)
+        return n_size
+    
 
     def forward(self, x):
         x = self.layer1(x)
