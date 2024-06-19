@@ -36,7 +36,7 @@ class DsModel(nn.Module):
     
 
 class DSModel_Fusion(nn.Module):
-    def __init__(self, pred_model, num_classes, fusion=None):
+    def __init__(self, pred_model, num_classes = 1, fusion=None):
         super().__init__()
 
         self.predmodel = pred_model
@@ -60,9 +60,11 @@ class DSModel_Fusion(nn.Module):
 
         self.fc_embed = nn.Linear(512, 256)
 
-        self.fc = nn.Sequential(
-            nn.Linear(512, 1),
-            nn.Sigmoid())
+        self.fc = nn.Linear(512, num_classes)
+        # self.fc = nn.Sequential(
+            # nn.Linear(512, num_classes),
+            # nn.Softmax()
+            # )
         
 
     def forward(self, X_i, X_j):
@@ -83,8 +85,6 @@ class DSModel_Fusion(nn.Module):
         embeddings = self.fc_embed(x)
 
         x_scores = self.fc(x)
-
-        
 
         return x_scores, embeddings
 

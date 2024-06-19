@@ -68,7 +68,7 @@ def ETLHelper(userID, sessionPath):
     Window_size = 200
     step = 10
 
-    home = os.getcwd()
+    home = "D:/OptimIA/individu_projects/youcef_script/Data_1"
     # print(home)
     # Mohamed default cwd--->: "/Data_1/"
     userPath = home + '/' + str(userID) +'/'
@@ -138,17 +138,20 @@ def ETL(user, session):
     yield touchSet, userLabel, Logs
 
 
-def dataGenerator(numUsers, evaluation=None, pretraining=True):
+def dataGenerator(numUsers, mode = "pretraining"):
 
-    if pretraining == True:
+    if mode == "pretraining":
         starting_session = 0
         ending_session = 9
-    if evaluation == True:
+    elif mode == "evaluation":
         starting_session = 12
         ending_session = 24
-    else:
+    elif mode == "finetuning":
         starting_session = 0
-        ending_session = 13
+        ending_session = 12
+    else:
+        raise Exception("Please choose the mode of training : pretraining, evaluation, finetuning.")
+
     x_ds = []
     touch_ds = []
 
@@ -158,15 +161,24 @@ def dataGenerator(numUsers, evaluation=None, pretraining=True):
     y = []
     u=0
 
-    while u <= numUsers:
+
+    while u < numUsers:
         print("userID {}".format(u))
-        for touch_data, label, logs in ETL(user=u, session=range(starting_session, ending_session)): 
-            touch_ds.append(touch_data)
-            y_ds.append(label)
-            Logs.append(logs)
-            y.append(np.zeros(Logs[0].shape[0]) + u)
+        try:
+            data = ETL(user=u, session=range(starting_session, ending_session))
+
+            for touch_data, label, logs in data:
+                touch_ds.append(touch_data)
+                y_ds.append(label)
+                Logs.append(logs)
+                y.append(np.zeros(Logs[0].shape[0]) + u)
+
         
+        except:
+            print("Skip UserID {}".format(u))
+
         u+=1
+        
     Logs = np.vstack(Logs)
     y = np.hstack(y)
     touch_ds = np.vstack(touch_ds)
