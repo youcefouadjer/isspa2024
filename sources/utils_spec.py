@@ -92,8 +92,6 @@ def ETLHelper(userID, sessionPath):
     mag_norm = np.expand_dims(mag_norm, axis=1)
     
     touchActivity = np.genfromtxt('ScrollEvent.csv', delimiter=',')[:10000,[6,7,8,9]]
-    # touchActivity = np.genfromtxt('TouchEvent.csv', delimiter=',')[:10000,[6,7,8,9]]
-    
     
     if len(touchActivity) < 10000:
         touchActivity = overSampling(touchData=touchActivity, maxLength=10000) 
@@ -153,6 +151,7 @@ def dataGenerator(numUsers, mode = "pretraining"):
         ending_session = 12
     else:
         raise Exception("Please choose the mode of training : pretraining, evaluation, finetuning.")
+
     x_ds = []
     touch_ds = []
 
@@ -161,6 +160,7 @@ def dataGenerator(numUsers, mode = "pretraining"):
     Logs = []
     y = []
     u=0
+
 
     while u < numUsers:
         print("userID {}".format(u))
@@ -172,6 +172,7 @@ def dataGenerator(numUsers, mode = "pretraining"):
                 y_ds.append(label)
                 Logs.append(logs)
                 y.append(np.zeros(Logs[0].shape[0]) + u)
+
         
         except:
             print("Skip UserID {}".format(u))
