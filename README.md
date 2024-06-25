@@ -1,6 +1,8 @@
-# isspa2024
 github repository for the poster presentation:
 ### Behavioral Biometrics: A multimodal Signal Processing Approach for User Authentication on mobile phones
+
+### Event:
+International School on Signal Processing and its Applications. Focus: Signal Processing and Artificial Intelligence
 #### Contributors:
 - Youcef Ouadjer
 - Mohamed El-Amine Bellebna.
