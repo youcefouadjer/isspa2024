@@ -1,5 +1,5 @@
 # isspa2024
-github repository for:
+github repository for the poster presentation:
 ### Behavioral Biometrics: A multimodal Signal Processing Approach for User Authentication on mobile phones
 #### Contributors:
 - Youcef Ouadjer
